@@ -5,7 +5,7 @@ gc()             #garbage collection
 require("data.table")
 require("rpart")
 
-setwd("." )  #establezco la carpeta donde voy a trabajar
+setwd("~/Documents/Maestria_2022/DMEYF/" )  #establezco la carpeta donde voy a trabajar
 #cargo el dataset
 dataset  <- fread( "./datasets/competencia1_2022.csv")
 
@@ -47,6 +47,6 @@ for( vmaxdepth  in 4:25 )
 
   #genero el archivo para Kaggle
   fwrite( entrega,
-          file= paste0("./kaggle/altura_", vmaxdepth, ".csv"))
+          file= paste0("./exp/kaggle/altura_", vmaxdepth, ".csv"))
 }
 
