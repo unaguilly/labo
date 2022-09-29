@@ -173,10 +173,24 @@ EstimarGanancia  <- function( x )
 #------------------------------------------------------------------------------
 #Aqui empieza el programa
 
-setwd( "~/Documents/Maestria_2022/DMEYF/" )
+setwd( "~/Documents/Maestria_22/DMEYF/" )
 
 #cargo el dataset, aqui debe poner  SU RUTA
-dataset  <- fread("~/Documents/Maestria_2022/DMEYF/datasets/competencia1_2022.csv")   #donde entreno
+dataset  <- fread("datasets/competencia1_2022.csv")   #donde entreno
+
+#Agrego estos features para después correr un árbol común con los hyper de acá y agregar los predicados que de y luego volver a correr todo eso acá.
+
+
+
+dataset[ , campo1 := as.integer( ctrx_quarter <14 & mcuentas_saldo < -1256.1 & cprestamos_personales <2 ) ]
+dataset[ , campo2 := as.integer( ctrx_quarter <14 & mcuentas_saldo < -1256.1 & cprestamos_personales>=2 ) ]
+dataset[ , campo3 := as.integer( ctrx_quarter <14 & mcuentas_saldo>= -1256.1 & mcaja_ahorro <2601.1 ) ]
+dataset[ , campo4 := as.integer( ctrx_quarter <14 & mcuentas_saldo>= -1256.1 & mcaja_ahorro>=2601.1 ) ]
+dataset[ , campo5 := as.integer( ctrx_quarter>=14 & ( Visa_status>=8 | is.na(Visa_status) ) & ( Master_status>=8 | is.na(Master_status) ) ) ]
+dataset[ , campo6 := as.integer( ctrx_quarter>=14 & ( Visa_status>=8 | is.na(Visa_status) ) & ( Master_status <8 & !is.na(Master_status) ) ) ]
+dataset[ , campo7 := as.integer( ctrx_quarter>=14 & Visa_status <8 & !is.na(Visa_status) & ctrx_quarter <38 ) ]
+dataset[ , campo8 := as.integer( ctrx_quarter>=14 & Visa_status <8 & !is.na(Visa_status) & ctrx_quarter>=38 ) ]
+
 
 #creo la clase_binaria  SI= {BAJA+1, BAJA+2}  NO={CONTINUA}
 dataset[ foto_mes==202101, clase_binaria :=  ifelse( clase_ternaria=="CONTINUA", "NO", "SI" ) ]
@@ -188,12 +202,12 @@ dtrain  <- dataset[ foto_mes==202101, ]
 #creo la carpeta donde va el experimento
 # HT  representa  Hiperparameter Tuning
 dir.create( "./exp/",  showWarnings = FALSE ) 
-dir.create( "./exp/HT4110/", showWarnings = FALSE )
-setwd("./exp/HT4110/")   #Establezco el Working Directory DEL EXPERIMENTO
+dir.create( "./exp/HT4110_cris/", showWarnings = FALSE )
+setwd("./exp/HT4110_cris/")   #Establezco el Working Directory DEL EXPERIMENTO
 
 #defino los archivos donde guardo los resultados de la Bayesian Optimization
-archivo_log  <- "HT4110.txt"
-archivo_BO   <- "HT4110.RDATA"
+archivo_log  <- "HT4110_cris.txt"
+archivo_BO   <- "HT4110_cris.RDATA"
 
 #leo si ya existe el log, para retomar en caso que se se corte el programa
 GLOBAL_iteracion  <- 0
@@ -237,3 +251,5 @@ if( !file.exists( archivo_BO ) ) {
 
 } else  run  <- mboContinue( archivo_BO )   #retomo en caso que ya exista
 
+BO_result <- fread("HT4110_cris.txt")
+View(BO_result)
