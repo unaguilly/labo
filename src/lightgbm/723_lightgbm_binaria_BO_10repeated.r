@@ -105,12 +105,11 @@ fganancia_logistic_lightgbm  <- function( probs, datos)
 #------------------------------------------------------------------------------
 #esta funcion solo puede recibir los parametros que se estan optimizando
 #el resto de los parametros se pasan como variables globales, la semilla del mal ...
-vector_ganancia <- c()
-for (semilla in PARAM$hyperparametertuning$semilla_azar2) {
-  EstimarGanancia_lightgbm  <- function( x )
-  {
+
+EstimarGanancia_lightgbm  <- function( x ) {
+  vector_ganancia <- c()
+  for (semilla in PARAM$hyperparametertuning$semilla_azar2) {
     gc()  #libero memoria
-    vector_ganancia <- c()
     #llevo el registro de la iteracion por la que voy
     GLOBAL_iteracion  <<- GLOBAL_iteracion + 1
   
@@ -184,10 +183,10 @@ for (semilla in PARAM$hyperparametertuning$semilla_azar2) {
     xx$ganancia_prom <- mean(vector_ganancia)
     xx$iteracion <- GLOBAL_iteracion
     loguear( xx, arch= klog )
-  
-    return( mean(vector_ganancia) )
   }
+  return( mean(vector_ganancia) )
 }
+
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 #Aqui empieza el programa
