@@ -39,13 +39,7 @@ gimnasio_tirar  <- function(  pids,  pcantidad )
 }
 
 
-#El cazatalentos decide a que jugador llevarse
-#devuelve la cantidad de tiros libres y si le acerto al verdadero_mejor o no
-gimnasio_veredicto  <- function( pid )
-{
-  return( list("tiros_total"= GLOBAL_tiros_total, 
-               "acierto"=     as.integer( GLOBAL_jugadores[pid]==0.7) ))
-}
+
 #------------------------------------------------------------------------------
 
 
