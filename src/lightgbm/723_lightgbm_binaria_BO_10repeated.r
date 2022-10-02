@@ -55,8 +55,8 @@ PARAM$hyperparametertuning$iteraciones <- 100
 PARAM$hyperparametertuning$xval_folds  <- 5
 PARAM$hyperparametertuning$POS_ganancia  <- 78000
 PARAM$hyperparametertuning$NEG_ganancia  <- -2000
-
-PARAM$hyperparametertuning$semilla_azar  <- c( 609277, 425783, 493729, 315697, 239069)  #Aqui poner la propia semilla, PUEDE ser distinta a la de trainingstrategy
+PARAM$hyperparametertuning$semilla_azar  <-493729
+PARAM$hyperparametertuning$semilla_azar2  <- c( 609277, 425783, 493729, 315697, 239069,100019, 110119, 111119, 111919, 900019)  #Aqui poner la propia semilla, PUEDE ser distinta a la de trainingstrategy
 
 #------------------------------------------------------------------------------
 #graba a un archivo los componentes de lista
@@ -105,11 +105,11 @@ fganancia_logistic_lightgbm  <- function( probs, datos)
 #------------------------------------------------------------------------------
 #esta funcion solo puede recibir los parametros que se estan optimizando
 #el resto de los parametros se pasan como variables globales, la semilla del mal ...
-for (semilla in PARAM$hyperparametertuning$semilla_azar) {
-  EstimarGanancia_lightgbm  <- function( x )
-  {
+
+EstimarGanancia_lightgbm  <- function( x ) {
+  vector_ganancia <- c()
+  for (semilla in PARAM$hyperparametertuning$semilla_azar2) {
     gc()  #libero memoria
-    vector_ganancia <- c()
     #llevo el registro de la iteracion por la que voy
     GLOBAL_iteracion  <<- GLOBAL_iteracion + 1
   
@@ -179,19 +179,20 @@ for (semilla in PARAM$hyperparametertuning$semilla_azar) {
   
     #logueo 
     xx  <- param_completo
-    xx$ganancia  <- ganancia_normalizada   #le agrego la ganancia
+    xx$ganancia  <- ganancia_normalizada #le agrego la ganancia
+    xx$ganancia_prom <- mean(vector_ganancia)
     xx$iteracion <- GLOBAL_iteracion
     loguear( xx, arch= klog )
-  
-    return( mean(vector_ganancia) )
   }
+  return( mean(vector_ganancia) )
 }
+
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 #Aqui empieza el programa
 
 #Aqui se debe poner la carpeta de la computadora local
-setwd("~/Documents/Maestria_22/DMEYF/")   #Establezco el Working Directory
+setwd("~/buckets/b1/")  #Establezco el Working Directory
 
 #cargo el dataset donde voy a entrenar el modelo
 dataset  <- fread( PARAM$input$dataset )
