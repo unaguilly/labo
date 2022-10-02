@@ -32,8 +32,8 @@ options(error = function() {
 
 #Aqui se cargan los hiperparametros
 hs <- makeParamSet( 
-         makeNumericParam("learning_rate",    lower=    0.005, upper=    0.3),
-         makeNumericParam("feature_fraction", lower=    0.2  , upper=    1.0),
+         makeNumericParam("learning_rate",    lower=    0.005, upper=    0.03),
+         makeNumericParam("feature_fraction", lower=    0.5  , upper=    1.0),
          makeIntegerParam("min_data_in_leaf", lower=    1000L   , upper=  8000L),
          makeIntegerParam("num_leaves",       lower=   500L   , upper=  1024L),
          makeIntegerParam("envios",           lower= 5000L   , upper= 15000L)
@@ -43,7 +43,7 @@ hs <- makeParamSet(
 #  muy pronto esto se leera desde un archivo formato .yaml
 PARAM  <- list()
 
-PARAM$experimento  <- "HT7231_FE_bis"
+PARAM$experimento  <- "HT7231_FE_bis_v2"
 
 PARAM$input$dataset       <- "./datasets/FE_competencia2_2022.csv.gz"
 PARAM$input$training      <- c( 202103 )
