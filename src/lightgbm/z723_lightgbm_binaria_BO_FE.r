@@ -34,8 +34,8 @@ options(error = function() {
 hs <- makeParamSet( 
          makeNumericParam("learning_rate",    lower=    0.005, upper=    0.3),
          makeNumericParam("feature_fraction", lower=    0.2  , upper=    1.0),
-         makeIntegerParam("min_data_in_leaf", lower=    200L   , upper=  8000L),
-         makeIntegerParam("num_leaves",       lower=   100L   , upper=  1024L),
+         makeIntegerParam("min_data_in_leaf", lower=    1000L   , upper=  8000L),
+         makeIntegerParam("num_leaves",       lower=   500L   , upper=  1024L),
          makeIntegerParam("envios",           lower= 5000L   , upper= 15000L)
         )
 
