@@ -43,7 +43,7 @@ hs <- makeParamSet(
 #  muy pronto esto se leera desde un archivo formato .yaml
 PARAM  <- list()
 
-PARAM$experimento  <- "HT7231_FE"
+PARAM$experimento  <- "HT7231_FE_bis"
 
 PARAM$input$dataset       <- "./datasets/FE_competencia2_2022.csv.gz"
 PARAM$input$training      <- c( 202103 )
@@ -189,7 +189,7 @@ EstimarGanancia_lightgbm  <- function( x )
 #Aqui empieza el programa
 
 #Aqui se debe poner la carpeta de la computadora local
-setwd("~/Documents/Maestria_22/DMEYF/")   #Establezco el Working Directory
+setwd("~/buckets/b1/")   #Establezco el Working Directory
 
 #cargo el dataset donde voy a entrenar el modelo
 dataset  <- fread( PARAM$input$dataset )
