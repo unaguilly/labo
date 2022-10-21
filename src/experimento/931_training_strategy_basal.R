@@ -16,7 +16,7 @@ require("data.table")
 PARAM  <- list()
 PARAM$experimento <- "TS9310_basal"
 
-PARAM$exp_input  <- "FE9250_basal"
+PARAM$exp_input  <- "FE9250_experimento"
 
 PARAM$future       <- c( 202105 )
 
