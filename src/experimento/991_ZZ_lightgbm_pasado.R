@@ -20,7 +20,7 @@ PARAM$exp_input  <- "HT9410_pasado"
 PARAM$modelos  <- 2
 # FIN Parametros del script
 
-ksemilla  <- 425783
+ksemilla  <- c(609277, 425783, 493729, 315697, 239069)
 
 #------------------------------------------------------------------------------
 options(error = function() { 
@@ -51,127 +51,140 @@ TS  <- readLines( arch_TS, warn=FALSE )
 arch_dataset  <- paste0( base_dir, "exp/", TS, "/dataset_train_final.csv.gz" )
 dataset  <- fread( arch_dataset )
 
-#leo el dataset donde voy a aplicar el modelo final
-arch_future  <- paste0( base_dir, "exp/", TS, "/dataset_future.csv.gz" )
-dfuture <- fread( arch_future )
-
-
 #defino la clase binaria
 dataset[ , clase01 := ifelse( clase_ternaria %in% c("BAJA+1","BAJA+2"), 1, 0 )  ]
 
 campos_buenos  <- setdiff( colnames(dataset), c( "clase_ternaria", "clase01") )
 
+#leo el dataset donde voy a aplicar el modelo final
+futures <- c( 202101, 202102, 202103, 202104 )
 
-#genero un modelo para cada uno de las modelos_qty MEJORES iteraciones de la Bayesian Optimization
-for( i in  1:PARAM$modelos )
-{
-  parametros  <- as.list( copy( tb_log[ i ] ) )
-  iteracion_bayesiana  <- parametros$iteracion_bayesiana
-
-  arch_modelo  <- paste0( "modelo_" ,
-                          sprintf( "%02d", i ),
-                          "_",
-                          sprintf( "%03d", iteracion_bayesiana ),
-                          ".model" )
-
-
-  #creo CADA VEZ el dataset de lightgbm
-  dtrain  <- lgb.Dataset( data=    data.matrix( dataset[ , campos_buenos, with=FALSE] ),
-                          label=   dataset[ , clase01],
-                          weight=  dataset[ , ifelse( clase_ternaria %in% c("BAJA+2"), 1.0000001, 1.0)],
-                          free_raw_data= FALSE
-                        )
-
-  ganancia  <- parametros$ganancia
-
-  #elimino los parametros que no son de lightgbm
-  parametros$experimento  <- NULL
-  parametros$cols         <- NULL
-  parametros$rows         <- NULL
-  parametros$fecha        <- NULL
-  parametros$prob_corte   <- NULL
-  parametros$estimulos    <- NULL
-  parametros$ganancia     <- NULL
-  parametros$iteracion_bayesiana  <- NULL
-
-  #Utilizo la semilla definida en este script
-  parametros$seed  <- ksemilla
+for (futuro in futures){
   
-  #genero el modelo entrenando en los datos finales
-  set.seed( parametros$seed )
-  modelo_final  <- lightgbm( data= dtrain,
-                             param=  parametros,
-                             verbose= -100 )
-
-  #grabo el modelo, achivo .model
-  lgb.save( modelo_final,
-            file= arch_modelo )
-
-  #creo y grabo la importancia de variables
-  tb_importancia  <- as.data.table( lgb.importance( modelo_final ) )
-  fwrite( tb_importancia,
-          file= paste0( "impo_", 
-                        sprintf( "%02d", i ),
-                        "_",
-                        sprintf( "%03d", iteracion_bayesiana ),
-                        ".txt" ),
-          sep= "\t" )
-
-
-  #genero la prediccion, Scoring
-  prediccion  <- predict( modelo_final,
-                          data.matrix( dfuture[ , campos_buenos, with=FALSE ] ) )
-
-  tb_prediccion  <- dfuture[  , list( numero_de_cliente, foto_mes ) ]
-  tb_prediccion[ , prob := prediccion ]
-
-
-  nom_pred  <- paste0( "pred_",
-                       sprintf( "%02d", i ),
-                       "_",
-                       sprintf( "%03d", iteracion_bayesiana),
-                       ".csv"  )
-
-  fwrite( tb_prediccion,
-          file= nom_pred,
-          sep= "\t" )
-
-
-  #genero los archivos para Kaggle
-  cortes  <- seq( from=  7000,
-                  to=   11000,
-                  by=     500 )
-
-
-  setorder( tb_prediccion, -prob )
-
-  for( corte in cortes )
+  arch_future  <- paste0( base_dir, "exp/", TS, "/dataset_future_", futuro,"_.csv.gz" )
+  dfuture <- fread( arch_future )
+  
+  #genero un modelo para cada uno de las modelos_qty MEJORES iteraciones de la Bayesian Optimization
+  for( i in  1:PARAM$modelos )
   {
-    tb_prediccion[  , Predicted := 0L ]
-    tb_prediccion[ 1:corte, Predicted := 1L ]
-
-    nom_submit  <- paste0( PARAM$experimento, 
-                           "_",
+    for(ksemilla in ksemillas)
+    {
+      parametros  <- as.list( copy( tb_log[ i ] ) )
+      iteracion_bayesiana  <- parametros$iteracion_bayesiana
+      
+      arch_modelo  <- paste0( "modelo_" , ksemilla, "_",
+                              futuro, "_",
+                              sprintf( "%02d", i ),
+                              "_",
+                              sprintf( "%03d", iteracion_bayesiana ),
+                              ".model" )
+      
+      
+      #creo CADA VEZ el dataset de lightgbm
+      dtrain  <- lgb.Dataset( data=    data.matrix( dataset[ , campos_buenos, with=FALSE] ),
+                              label=   dataset[ , clase01],
+                              weight=  dataset[ , ifelse( clase_ternaria %in% c("BAJA+2"), 1.0000001, 1.0)],
+                              free_raw_data= FALSE
+      )
+      
+      ganancia  <- parametros$ganancia
+      
+      #elimino los parametros que no son de lightgbm
+      parametros$experimento  <- NULL
+      parametros$cols         <- NULL
+      parametros$rows         <- NULL
+      parametros$fecha        <- NULL
+      parametros$prob_corte   <- NULL
+      parametros$estimulos    <- NULL
+      parametros$ganancia     <- NULL
+      parametros$iteracion_bayesiana  <- NULL
+      
+      #Utilizo la semilla definida en este script
+      parametros$seed  <- ksemilla
+      
+      #genero el modelo entrenando en los datos finales
+      set.seed( parametros$seed )
+      modelo_final  <- lightgbm( data= dtrain,
+                                 param=  parametros,
+                                 verbose= -100 )
+      
+      
+      
+      
+      #grabo el modelo, achivo .model
+      lgb.save( modelo_final,
+                file= arch_modelo )
+      
+      #creo y grabo la importancia de variables
+      tb_importancia  <- as.data.table( lgb.importance( modelo_final ) )
+      fwrite( tb_importancia,
+              file= paste0( "impo_", ksemilla, "_",
+                            futuro, "_",
+                            sprintf( "%02d", i ),
+                            "_",
+                            sprintf( "%03d", iteracion_bayesiana ),
+                            ".txt" ),
+              sep= "\t" )
+      
+      
+      #genero la prediccion, Scoring
+      prediccion  <- predict( modelo_final,
+                              data.matrix( dfuture[ , campos_buenos, with=FALSE ] ) )
+      
+      tb_prediccion  <- dfuture[  , list( numero_de_cliente, foto_mes ) ]
+      tb_prediccion[ , prob := prediccion ]
+      
+      
+      nom_pred  <- paste0( "pred_", ksemilla, "_",
+                           futuro, "_",
                            sprintf( "%02d", i ),
                            "_",
-                           sprintf( "%03d", iteracion_bayesiana ),
-                           "_",
-                           sprintf( "%05d", corte ),
-                           ".csv" )
-
-    fwrite(  tb_prediccion[ , list( numero_de_cliente, Predicted ) ],
-             file= nom_submit,
-             sep= "," )
-
+                           sprintf( "%03d", iteracion_bayesiana),
+                           ".csv"  )
+      
+      fwrite( tb_prediccion,
+              file= nom_pred,
+              sep= "\t" )
+      
+      
+      #genero los archivos para Kaggle
+      cortes  <- seq( from=  7000,
+                      to=   11000,
+                      by=     500 )
+      
+      
+      setorder( tb_prediccion, -prob )
+      
+      for( corte in cortes )
+      {
+        tb_prediccion[  , Predicted := 0L ]
+        tb_prediccion[ 1:corte, Predicted := 1L ]
+        
+        nom_submit  <- paste0( PARAM$experimento, 
+                               "_", ksemilla, "_",
+                               futuro, "_",
+                               sprintf( "%02d", i ),
+                               "_",
+                               sprintf( "%03d", iteracion_bayesiana ),
+                               "_",
+                               sprintf( "%05d", corte ),
+                               ".csv" )
+        
+        fwrite(  tb_prediccion[ , list( numero_de_cliente, Predicted ) ],
+                 file= nom_submit,
+                 sep= "," )
+        
+      }
+      
+      
+      #borro y limpio la memoria para la vuelta siguiente del for
+      rm( tb_prediccion )
+      rm( tb_importancia )
+      rm( modelo_final)
+      rm( parametros )
+      rm( dtrain )
+      gc()
+    }
   }
 
-
-  #borro y limpio la memoria para la vuelta siguiente del for
-  rm( tb_prediccion )
-  rm( tb_importancia )
-  rm( modelo_final)
-  rm( parametros )
-  rm( dtrain )
-  gc()
 }
-

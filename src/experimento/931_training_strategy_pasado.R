@@ -2,7 +2,7 @@
 #  64 GB de memoria RAM
 # 256 GB de espacio en el disco local
 #   8 vCPU
-
+# Editado para que grabe múltiples archivos de futuro para hacer la predicción.
 
 #limpio la memoria
 rm( list=ls() )  #remove all objects
@@ -18,7 +18,7 @@ PARAM$experimento <- "TS9310_pasado"
 
 PARAM$exp_input  <- "FE9250_experimento"
 
-PARAM$future       <- c( 202101 )
+PARAM$future       <- c( 202101, 202102, 202103, 202104 )
 
 PARAM$final_train  <- c( 202009, 202010, 202011 )
 
@@ -58,10 +58,12 @@ setwd(paste0( "./exp/", PARAM$experimento, "/"))   #Establezco el Working Direct
 setorder( dataset, foto_mes, numero_de_cliente )
 
 #grabo los datos del futuro
-fwrite( dataset[ foto_mes %in% PARAM$future, ],
-        file= "dataset_future.csv.gz",
-        logical01= TRUE,
-        sep= "," )
+for (futuro in PARAM$future){
+  fwrite( dataset[ foto_mes %in% futuro, ],
+          file= paste0( "dataset_future_",futuro , "_.csv.gz"),
+          logical01= TRUE,
+          sep= "," )
+  }
 
 #grabo los datos donde voy a entrenar los Final Models
 fwrite( dataset[ foto_mes %in% PARAM$final_train, ],
