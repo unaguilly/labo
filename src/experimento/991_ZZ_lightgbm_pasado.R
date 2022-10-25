@@ -20,7 +20,7 @@ PARAM$exp_input  <- "HT9410_pasado"
 PARAM$modelos  <- 2
 # FIN Parametros del script
 
-ksemilla  <- c(609277, 425783, 493729, 315697, 239069)
+ksemillas  <- c(609277, 425783, 493729, 315697, 239069)
 
 #------------------------------------------------------------------------------
 options(error = function() { 
