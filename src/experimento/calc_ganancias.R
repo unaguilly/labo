@@ -44,15 +44,17 @@ for (BO in BOS){
   BO_idx <- BO_idx + 1
 }
 
-col_semilla <- c("Semilla 1","Semilla 2","Semilla 3","Semilla 4","Semilla 5" )
+col_semilla <- c("Semilla 1","Semilla 2","Semilla 3","Semilla 4","Semilla 5", "Media" )
+BO_1_summary <- rbind(BO_1_summary, BO_1_summary %>% summarise_all(mean))
+BO_2_summary <- rbind(BO_2_summary, BO_2_summary %>% summarise_all(mean))
+
 BO_1_summary <- cbind(col_semilla, BO_1_summary)
 BO_2_summary <- cbind(col_semilla, BO_2_summary)
 
 melteado <-melt(BO_1_summary, id = c('col_semilla'))
 
-ggplot(data = melteado, aes(x = variable, y = value, color = col_semilla)) +
-  geom_line()
 
 ggplot(data=melteado, aes(x=variable, y=value, group=col_semilla)) +
   geom_line(aes(color=col_semilla))+
-  geom_point()
+  geom_point() 
+
