@@ -44,17 +44,37 @@ for (BO in BOS){
   BO_idx <- BO_idx + 1
 }
 
+#genero una tabla con las medias y desvíos por corte
+BO_1_media <-BO_1_summary %>% summarise_all(mean)
+BO_1_media <-rbind(BO_1_media, BO_1_summary %>% summarise_all(sd))
+BO_2_media <-BO_2_summary %>% summarise_all(mean)
+BO_2_media <-rbind(BO_2_media, BO_2_summary %>% summarise_all(sd))
+
+#formateo la tabla con nombres de filas y columnas y agrego la media de cada corte
 col_semilla <- c("Semilla 1","Semilla 2","Semilla 3","Semilla 4","Semilla 5", "Media" )
 BO_1_summary <- rbind(BO_1_summary, BO_1_summary %>% summarise_all(mean))
 BO_2_summary <- rbind(BO_2_summary, BO_2_summary %>% summarise_all(mean))
-
 BO_1_summary <- cbind(col_semilla, BO_1_summary)
 BO_2_summary <- cbind(col_semilla, BO_2_summary)
 
-melteado <-melt(BO_1_summary, id = c('col_semilla'))
+colnames(BO_1_summary) <- c('col_semilla','7000','7500','8000','8500','9000','9500','10000','10500','11000')
+colnames(BO_2_summary) <- c('col_semilla','7000','7500','8000','8500','9000','9500','10000','10500','11000')
 
+#cambio estructura para poder graficar
+BO_1_melt <-melt(BO_1_summary, id = c('col_semilla'))
+BO_2_melt <-melt(BO_2_summary, id = c('col_semilla'))
 
-ggplot(data=melteado, aes(x=variable, y=value, group=col_semilla)) +
-  geom_line(aes(color=col_semilla))+
-  geom_point() 
+#ploteo
+ggplot(data=BO_1_melt, aes(x=variable, y=value, group=col_semilla)) +
+  geom_line(aes(color=col_semilla, size= col_semilla))+
+  labs(x="Corte", y="Ganancia", color="Semilla", size="Semilla")+
+ scale_size_manual(values = c("Semilla 1" = 0.5,"Semilla 2" = 0.5,"Semilla 3" = 0.5,
+                               "Semilla 4" = 0.5,"Semilla 5" = 0.5, "Media" = 1.5 ))
+  
+
+ggplot(data=BO_2_melt, aes(x=variable, y=value, group=col_semilla)) +
+  geom_line(aes(color=col_semilla, size= col_semilla))+
+  labs(x="Corte", y="Ganancia", color="Semilla", size="Semilla")+
+  scale_size_manual(values = c("Semilla 1" = 0.5,"Semilla 2" = 0.5,"Semilla 3" = 0.5,
+                               "Semilla 4" = 0.5,"Semilla 5" = 0.5, "Media" = 1.5 ))
 
