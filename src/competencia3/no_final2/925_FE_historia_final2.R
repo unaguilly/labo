@@ -19,9 +19,9 @@ require("lightgbm")
 
 #Parametros del script
 PARAM  <- list()
-PARAM$experimento <- "FE9250_final"
+PARAM$experimento <- "FE9250_final2"
 
-PARAM$exp_input  <- "DR9141_final"
+PARAM$exp_input  <- "DR9141_final2"
 
 PARAM$lag1  <- FALSE
 PARAM$lag2  <- TRUE
@@ -364,7 +364,7 @@ if( PARAM$lag2 )
 if( PARAM$lag3 )
 {
   #creo los campos lags de orden 2
-  dataset[ , paste0( cols_lagueables, "_lag2") := shift(.SD, 3, NA, "lag"), 
+  dataset[ , paste0( cols_lagueables, "_lag3") := shift(.SD, 3, NA, "lag"), 
            by= numero_de_cliente, 
            .SDcols= cols_lagueables ]
   
