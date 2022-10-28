@@ -204,3 +204,16 @@ for (i in (1:5)){
   print(plot_list2[[i]])
 }
 dev.off()
+
+unique(dataset$foto_mes)
+
+data_eval  <- dataset[ foto_mes != '202106' & foto_mes != '202107',c("foto_mes","clase_ternaria")  ]
+data_eval  <- data_eval[ clase_ternaria != 'CONTINUA', ]
+
+png('test2.png')
+ggplot(data_eval, aes(fill = clase_ternaria, 
+                 y = clase_ternaria,
+                 x = factor(foto_mes))) + 
+  geom_bar(position = "fill",  
+           stat="identity") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+dev.off()
