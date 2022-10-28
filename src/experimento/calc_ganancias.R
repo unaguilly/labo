@@ -88,7 +88,7 @@ semillas <- c(609277, 425783, 493729, 315697, 239069)
 BOS <- c('_01_054_','_02_036_')
 cortes <- c('07000','07500','08000','08500','09000','09500','10000','10500','11000')
 nombre_base <- 'ZZ9410_pasado_'
-dias <- c(202101,202102,202103,202104)
+dias <- c(202101,202102,202103,202104, 202105)
 
 for (dia in dias){
   BO_idx <- 1
@@ -118,13 +118,13 @@ for (dia in dias){
 }
 
 
-resumenes1 <- c('202101_BO_1_summary', '202102_BO_1_summary','202103_BO_1_summary','202104_BO_1_summary')
-resumenes2 <- c('202101_BO_2_summary', '202102_BO_2_summary','202103_BO_2_summary','202104_BO_2_summary')
-melts1 <- c('202101_BO_1_melt', '202102_BO_1_melt','202103_BO_1_melt','202104_BO_1_melt')
-melts2 <- c('202101_BO_2_melt', '202102_BO_2_melt','202103_BO_2_melt','202104_BO_2_melt')
+resumenes1 <- c('202101_BO_1_summary', '202102_BO_1_summary','202103_BO_1_summary','202104_BO_1_summary','202105_BO_1_summary')
+resumenes2 <- c('202101_BO_2_summary', '202102_BO_2_summary','202103_BO_2_summary','202104_BO_2_summary', '202105_BO_2_summary')
+melts1 <- c('202101_BO_1_melt', '202102_BO_1_melt','202103_BO_1_melt','202104_BO_1_melt','202105_BO_1_melt')
+melts2 <- c('202101_BO_2_melt', '202102_BO_2_melt','202103_BO_2_melt','202104_BO_2_melt', '202105_BO_2_melt')
 
 #genero una tabla con las medias y desvíos por corte
-for (i in (1:4)){
+for (i in (1:5)){
   temp <- get(resumenes1[i]) %>% summarise_all(mean)
   temp <- rbind(temp, get(resumenes1[i]) %>% summarise_all(sd))
   assign(paste0(dias[i],'_BO_1_media'), temp )
@@ -137,7 +137,7 @@ for (i in (1:4)){
 
 #formateo la tabla con nombres de filas y columnas y agrego la media de cada corte
 col_semilla <- c("Semilla 1","Semilla 2","Semilla 3","Semilla 4","Semilla 5", "Media" )
-for (i in (1:4)){
+for (i in (1:5)){
   temp <- get(resumenes1[i])
   temp_mean <- get(resumenes1[i]) %>% summarise_all(mean)
   assign(paste0(resumenes1[i]), rbind(temp, temp_mean))
@@ -151,7 +151,7 @@ for (i in (1:4)){
 
 
 
-for (i in (1:4)){
+for (i in (1:5)){
   temp <- get(resumenes1[i])
   colnames(temp) <- c('col_semilla','7000','7500','8000','8500','9000','9500','10000','10500','11000')
   assign(paste0(resumenes1[i]), temp)
@@ -161,7 +161,7 @@ for (i in (1:4)){
 }
 
 #cambio estructura para poder graficar
-for (i in (1:4)){
+for (i in (1:5)){
   temp <- get(resumenes1[i])
   assign(paste(melts1[i]), melt(temp, id = c('col_semilla')))
   temp2 <- get(resumenes2[i])
@@ -174,7 +174,7 @@ for (i in (1:4)){
 
 
 plot_list1 = list()
-for (i in (1:4)){
+for (i in (1:5)){
   p <- ggplot(data=get(melts1[i]), aes(x=variable, y=value, group=col_semilla)) +
     geom_line(aes(color=col_semilla, size= col_semilla))+
     labs(x="Corte", y="Ganancia", color="Semilla", size="Semilla", title = paste0(dias[i]," - Modelo 1"))+
@@ -184,13 +184,13 @@ for (i in (1:4)){
 }
 
 pdf("pasado_BO1.pdf")
-for (i in (1:4)){
+for (i in (1:5)){
   print(plot_list1[[i]])
 }
 dev.off()
 
 plot_list2 = list()
-for (i in (1:4)){
+for (i in (1:5)){
   p <- ggplot(data=get(melts2[i]), aes(x=variable, y=value, group=col_semilla)) +
   geom_line(aes(color=col_semilla, size= col_semilla))+
   labs(x="Corte", y="Ganancia", color="Semilla", size="Semilla", title = paste0(dias[i]," - Modelo 2"))+
@@ -200,7 +200,7 @@ for (i in (1:4)){
 }
 
 pdf("pasado_BO2.pdf")
-for (i in (1:4)){
+for (i in (1:5)){
   print(plot_list2[[i]])
 }
 dev.off()
