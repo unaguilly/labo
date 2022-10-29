@@ -9,24 +9,21 @@ require(ggplot2)
 setwd( "~/Documents/Maestria_2022/DMEYF/" )
 dataset <- fread("datasets/competencia3_2022.csv.gz")
 
-data_eval  <- dataset[ foto_mes== 202105  ]
-data_eval <- data_eval[,c("numero_de_cliente","clase_ternaria")]
-
 #cargo cada predicción por número de corte y genero un dataset por cada semilla. Luego repito por cada BO.
 
 semillas <- c(609277, 425783, 493729, 315697, 239069)
-BOS <- c('_01_022_','_02_053_')
-cortes <- c('07000','07500','08000','08500','09000','09500','10000','10500','11000')
-nombre_base <- 'ZZ9410_basal_'
+BOS <- c('_01_017_')
+cortes <- c('08000','08500','09000','09500','10000','10500','11000','11500','12000','12500','13000','13500','14000','14500', '15000')
+nombre_base <- 'ZZ9410_final_'
 
 BO_idx <- 1
 for (BO in BOS){
   semilla_idx <- 1
   temp <- data.table()
   for (semilla in semillas){
-    data_eval  <- dataset[ foto_mes== 202105,c("numero_de_cliente","clase_ternaria")  ]
+    data_eval  <- dataset[ foto_mes== 202107,c("numero_de_cliente","clase_ternaria")  ]
     for (corte in cortes){
-      df_pred <- fread(paste0('experimentos/basal/',nombre_base,semilla,BO,corte,'.csv'))
+      df_pred <- fread(paste0('exp/comp3_final/',nombre_base,semilla,BO,corte,'.csv'))
       data_eval <- df_pred %>% 
         right_join(., data_eval, by = "numero_de_cliente") 
       data_eval[  , paste0('ganancia_',corte) :=  ifelse( clase_ternaria=="BAJA+2" & Predicted ==1, 78000, -2000 ) ]
@@ -57,20 +54,22 @@ BO_2_summary <- rbind(BO_2_summary, BO_2_summary %>% summarise_all(mean))
 BO_1_summary <- cbind(col_semilla, BO_1_summary)
 BO_2_summary <- cbind(col_semilla, BO_2_summary)
 
-colnames(BO_1_summary) <- c('col_semilla','7000','7500','8000','8500','9000','9500','10000','10500','11000')
-colnames(BO_2_summary) <- c('col_semilla','7000','7500','8000','8500','9000','9500','10000','10500','11000')
+colnames(BO_1_summary) <- c('col_semilla','8000','8500','9000','9500','10000','10500','11000','11500','12000','12500','13000','13500','14000','14500', '15000' )
+colnames(BO_2_summary) <- c('col_semilla','8000','8500','9000','9500','10000','10500','11000','11500','12000','12500','13000','13500','14000','14500', '15000')
 
 #cambio estructura para poder graficar
 BO_1_melt <-melt(BO_1_summary, id = c('col_semilla'))
 BO_2_melt <-melt(BO_2_summary, id = c('col_semilla'))
 
 #ploteo
+png("exp_final.png")
 p_bo_1 <- ggplot(data=BO_1_melt, aes(x=variable, y=value, group=col_semilla)) +
   geom_line(aes(color=col_semilla, size= col_semilla))+
   labs(x="Corte", y="Ganancia", color="Semilla", size="Semilla", title = "Basal - Modelo 1")+
  scale_size_manual(values = c("Semilla 1" = 0.5,"Semilla 2" = 0.5,"Semilla 3" = 0.5,
                                "Semilla 4" = 0.5,"Semilla 5" = 0.5, "Media" = 1.5 ))
-  
+print(p_bo_1)
+dev.off()  
 
 p_bo_2 <- ggplot(data=BO_2_melt, aes(x=variable, y=value, group=col_semilla)) +
   geom_line(aes(color=col_semilla, size= col_semilla))+
