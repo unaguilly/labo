@@ -19,12 +19,13 @@ require("lightgbm")
 
 #Parametros del script
 PARAM  <- list()
-PARAM$experimento <- "FE9250_experimento"
+PARAM$experimento <- "FE9250_final3"
 
-PARAM$exp_input  <- "DR9141"
+PARAM$exp_input  <- "DR9141_final3"
 
 PARAM$lag1  <- FALSE
 PARAM$lag2  <- TRUE
+PARAM$lag3  <- TRUE
 PARAM$Tendencias  <- TRUE
 PARAM$RandomForest  <- FALSE          #No se puede poner en TRUE para la entrega oficial de la Tercera Competencia
 PARAM$CanaritosAsesinos  <- TRUE
@@ -357,6 +358,20 @@ if( PARAM$lag2 )
   for( vcol in cols_lagueables )
   {
     dataset[ , paste0(vcol, "_delta2") := get(vcol)  - get(paste0( vcol, "_lag2"))  ]
+  }
+}
+
+if( PARAM$lag3 )
+{
+  #creo los campos lags de orden 2
+  dataset[ , paste0( cols_lagueables, "_lag3") := shift(.SD, 3, NA, "lag"), 
+           by= numero_de_cliente, 
+           .SDcols= cols_lagueables ]
+  
+  #agrego los delta lags de orden 2
+  for( vcol in cols_lagueables )
+  {
+    dataset[ , paste0(vcol, "_delta3") := get(vcol)  - get(paste0( vcol, "_lag3"))  ]
   }
 }
 
