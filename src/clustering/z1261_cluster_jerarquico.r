@@ -24,7 +24,7 @@ PARAM$experimento  <- "CLU1261"
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 
-setwd( "~/buckets/b1/" ) 
+setwd( "~/Documents/Maestria_22/DMEYF" ) 
 
 #leo el dataset original
 # pero podria leer cualquiera que tenga Feature Engineering
@@ -33,7 +33,6 @@ dataset  <- fread( "./datasets/competencia3_2022.csv.gz", stringsAsFactors= TRUE
 #creo la carpeta donde va el experimento
 dir.create( paste0( "./exp/", PARAM$experimento, "/"), showWarnings = FALSE )
 setwd(paste0( "./exp/", PARAM$experimento, "/"))   #Establezco el Working Directory DEL EXPERIMENTO
-
 
 #me quedo SOLO con los BAJA+2
 dataset  <- dataset[  clase_ternaria =="BAJA+2"  & foto_mes>=202006  & foto_mes<=202105, ]
@@ -82,13 +81,13 @@ distintos <- 0
 while(  h>0  &  !( distintos >=6 & distintos <=7 ) )
 {
   h <- h - 1 
-  rf.cluster  <- cutree( hclust.rf, h)
+  rf.cluster  <- cutree( hclust.rf, h=h)
 
   dataset[  , cluster2 := NULL ]
   dataset[  , cluster2 := rf.cluster ]
 
   distintos  <- nrow( dataset[  , .N,  cluster2 ] )
-  cat( distintos, " " )
+  cat( distintos, " ", h, " " )
 }
 
 #en  dataset,  la columna  cluster2  tiene el numero de cluster
@@ -111,3 +110,28 @@ dataset[  , mean(ctrx_quarter),  cluster2 ]  #media de la variable  ctrx_quarter
 dataset[  , mean(mtarjeta_visa_consumo),  cluster2 ]
 dataset[  , mean(mcuentas_saldo),  cluster2 ]
 dataset[  , mean(chomebanking_transacciones),  cluster2 ]
+
+#################
+#graficar silhouettes
+
+distance <- (1.0 - modelo$proximity)
+plot_list = list()
+for (i in (5:20)){
+  p <- fviz_silhouette(silhouette(cutree(hclust.rf,h=i), distance))
+  plot_list[[i]] = p
+}
+
+pdf('silo2.pdf')
+for (i in (2:20)){
+  print(plot_list[[i]])
+}
+dev.off()
+###################
+# graficar nro de bajas+2 por mes
+dataset$foto_mes = factor(dataset$foto_mes)
+resumen = dataset[, .(cuenta = .N), foto_mes ]
+ggplot(data=resumen, aes(x=foto_mes, y=cuenta, group = 1)) +
+  geom_line()+
+  geom_point()
+
+#############

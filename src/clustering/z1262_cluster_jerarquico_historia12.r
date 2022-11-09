@@ -15,6 +15,8 @@ gc()             #garbage collection
 require("data.table")
 require("randomForest")
 require("ranger")
+library(factoextra)
+require("cluster")
 
 #Parametros del script
 PARAM <- list()
@@ -24,21 +26,21 @@ PARAM$experimento  <- "CLU1262"
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 
-setwd( "~/buckets/b1/" )  #cambiar por la carpeta local
+setwd( "~/Documents/Maestria_22/DMEYF/" )  #cambiar por la carpeta local
 
 #leo el dataset original
 # pero podria leer cualquiera que tenga Feature Engineering
-dataset  <- fread( "./datasets/competencia3_2022.csv.gz", stringsAsFactors= TRUE)
+dataset_completo  <- fread( "./datasets/competencia3_2022.csv.gz", stringsAsFactors= TRUE)
 
 #creo la carpeta donde va el experimento
 dir.create( paste0( "./exp/", PARAM$experimento, "/"), showWarnings = FALSE )
 setwd(paste0( "./exp/", PARAM$experimento, "/"))   #Establezco el Working Directory DEL EXPERIMENTO
 
 #me quedo SOLO con los BAJA+2
-dataset  <- dataset[  clase_ternaria =="BAJA+2"  & foto_mes>=202006  & foto_mes<=202105, ] 
+dataset  <- dataset_completo[  clase_ternaria =="BAJA+2"  & foto_mes>=202006  & foto_mes<=202105, ] 
 
 #armo el dataset de los 12 meses antes de la muerte de los registros que analizo
-dataset12  <- copy( dataset[  numero_de_cliente %in%  dataset[ , unique(numero_de_cliente)]  ]  )
+dataset12  <- copy( dataset_completo[  numero_de_cliente %in%  dataset[ , unique(numero_de_cliente)]  ]  )
 
 #asigno para cada registro cuantos meses faltan para morir
 setorderv( dataset12, c("numero_de_cliente", "foto_mes"), c(1,-1) )
@@ -135,3 +137,61 @@ dataset12[ dataset,
 fwrite( dataset12, 
         file= "cluster_de_bajas_12meses.txt",
         sep= "\t" )
+
+
+###############
+# medias de cada campo por mes por cluster
+resul = data.table(feature=character() ,cluster=numeric(), foto_mes=character(),media=numeric())
+for (campo in campos_buenos){
+  media <- dataset12[  , mean(get(campo)),  by=list(cluster2, foto_mes) ]
+  nueva_fila = data.table("feature" = campo,"cluster"=media$cluster2,"foto_mes"=media$foto_mes,"media" = media$V1)
+  resul = rbindlist(list(resul, nueva_fila))
+}
+
+
+################
+#ploteo la media de cada campo
+resul$cluster = factor(resul$cluster)
+resul <- resul[ foto_mes != '202006' & foto_mes != '202106' & foto_mes != '202107' ] 
+plot_list = list()
+i = 1
+for (campo in campos_buenos){
+  p <-ggplot(data=resul[ feature==campo], aes(x=foto_mes, y=media, group = cluster, 
+                                          color=cluster))+
+           labs(title = paste0("Columna: ",campo)) +
+    geom_line()+
+    geom_point()+
+    theme(axis.text.x=element_text(angle=45, hjust=1))
+  plot_list[[i]] = p
+  i = i+1
+}
+
+
+pdf("medias de campos por cluster.pdf")
+for (i in plot_list){
+  print (i)}
+dev.off()
+
+################
+
+
+distance <- (1.0 - modelo$proximity)
+
+plot_list = list()
+for (i in (2:10)){
+  p <- silhouette(cutree(hclust.rf,i), distance)
+  plot_list[[i]] = p
+}
+
+pdf('silo.pdf')
+for (i in (2:10)){
+  fviz_silhouette(silhouette(cutree(hclust.rf,i), distance))
+ }
+dev.off()
+
+
+#activos:
+dataset[cluster2==1 | cluster2==6 | cluster2==7  , .N ]  
+
+#inactivos:
+dataset[cluster2==2 | cluster2==3 | cluster2==4 | cluster2==5  , .N ] 
