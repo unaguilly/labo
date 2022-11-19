@@ -19,14 +19,14 @@ require("lightgbm")
 
 #Parametros del script
 PARAM  <- list()
-PARAM$experimento <- "FE9250_7"
+PARAM$experimento <- "FE9250_agos"
 
-PARAM$exp_input  <- "DR9141"
+PARAM$exp_input  <- "DR9141_final"
 
 PARAM$lag1  <- TRUE
 PARAM$lag2  <- TRUE
 PARAM$Tendencias  <- TRUE
-PARAM$RandomForest  <- FALSE          #No se puede poner en TRUE para la entrega oficial de la Tercera Competencia
+PARAM$RandomForest  <- TRUE          #No se puede poner en TRUE para la entrega oficial de la Tercera Competencia
 PARAM$CanaritosAsesinos  <- TRUE
 # FIN Parametros del script
 
@@ -154,57 +154,57 @@ TendenciaYmuchomas  <- function( dataset, cols, ventana=6, tendencia=TRUE, minim
 #------------------------------------------------------------------------------
 #agrega al dataset nuevas variables {0,1} que provienen de las hojas de un Random Forest
 # 
-# AgregaVarRandomForest  <- function( num.trees, max.depth, min.node.size, mtry)
-# {
-#   gc()
-#   dataset[ , clase01:= ifelse( clase_ternaria=="CONTINUA", 0, 1 ) ]
-# 
-#   campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria" ) )
-# 
-#   dataset_rf  <- copy( dataset[ , campos_buenos, with=FALSE] )
-#   azar  <- runif( nrow(dataset_rf) )
-#   dataset_rf[ , entrenamiento := as.integer( foto_mes>= 202101 &  foto_mes<= 202103 & ( clase01==1 | azar < 0.10 )) ]
-# 
-#   #imputo los nulos, ya que ranger no acepta nulos
-#   #Leo Breiman, ¿por que le temias a los nulos?
-#   dataset_rf  <- na.roughfix( dataset_rf )
-# 
-#   campos_buenos  <- setdiff( colnames(dataset_rf), c("clase_ternaria","entrenamiento" ) )
-#   modelo  <- ranger( formula= "clase01 ~ .",
-#                      data=  dataset_rf[ entrenamiento==1L, campos_buenos, with=FALSE  ] ,
-#                      classification= TRUE,
-#                      probability=   FALSE,
-#                      num.trees=     num.trees,
-#                      max.depth=     max.depth,
-#                      min.node.size= min.node.size,
-#                      mtry=          mtry
-#                    )
-# 
-#   rfhojas  <- predict( object= modelo, 
-#                        data= dataset_rf[ , campos_buenos, with=FALSE ],
-#                        predict.all= TRUE,    #entrega la prediccion de cada arbol
-#                        type= "terminalNodes" #entrega el numero de NODO el arbol
-#                      )
-# 
-#   for( arbol in 1:num.trees )
-#   {
-#     hojas_arbol  <- unique(  rfhojas$predictions[  , arbol  ] )
-# 
-#     for( pos in 1:length(hojas_arbol) )
-#     {
-#       nodo_id  <- hojas_arbol[ pos ]  #el numero de nodo de la hoja, estan salteados
-#       dataset[  ,  paste0( "rf_", sprintf( "%03d", arbol ), "_", sprintf( "%03d", nodo_id ) ) := 0L ]
-# 
-#       dataset[ which( rfhojas$predictions[ , arbol] == nodo_id ,  ), 
-#                paste0( "rf_", sprintf( "%03d", arbol ), "_", sprintf( "%03d", nodo_id ) ) := 1L ]
-#     }
-#   }
-# 
-#   rm( dataset_rf )
-#   dataset[ , clase01 := NULL ]
-# 
-#   gc()
-# }
+AgregaVarRandomForest  <- function( num.trees, max.depth, min.node.size, mtry)
+{
+  gc()
+  dataset[ , clase01:= ifelse( clase_ternaria=="CONTINUA", 0, 1 ) ]
+
+  campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria" ) )
+
+  dataset_rf  <- copy( dataset[ , campos_buenos, with=FALSE] )
+  azar  <- runif( nrow(dataset_rf) )
+  dataset_rf[ , entrenamiento := as.integer( foto_mes>= 202101 &  foto_mes<= 202105 & ( clase01==1 | azar < 0.10 )) ]
+
+  #imputo los nulos, ya que ranger no acepta nulos
+  #Leo Breiman, ¿por que le temias a los nulos?
+  dataset_rf  <- na.roughfix( dataset_rf )
+
+  campos_buenos  <- setdiff( colnames(dataset_rf), c("clase_ternaria","entrenamiento" ) )
+  modelo  <- ranger( formula= "clase01 ~ .",
+                     data=  dataset_rf[ entrenamiento==1L, campos_buenos, with=FALSE  ] ,
+                     classification= TRUE,
+                     probability=   FALSE,
+                     num.trees=     num.trees,
+                     max.depth=     max.depth,
+                     min.node.size= min.node.size,
+                     mtry=          mtry
+                   )
+
+  rfhojas  <- predict( object= modelo,
+                       data= dataset_rf[ , campos_buenos, with=FALSE ],
+                       predict.all= TRUE,    #entrega la prediccion de cada arbol
+                       type= "terminalNodes" #entrega el numero de NODO el arbol
+                     )
+
+  for( arbol in 1:num.trees )
+  {
+    hojas_arbol  <- unique(  rfhojas$predictions[  , arbol  ] )
+
+    for( pos in 1:length(hojas_arbol) )
+    {
+      nodo_id  <- hojas_arbol[ pos ]  #el numero de nodo de la hoja, estan salteados
+      dataset[  ,  paste0( "rf_", sprintf( "%03d", arbol ), "_", sprintf( "%03d", nodo_id ) ) := 0L ]
+
+      dataset[ which( rfhojas$predictions[ , arbol] == nodo_id ,  ),
+               paste0( "rf_", sprintf( "%03d", arbol ), "_", sprintf( "%03d", nodo_id ) ) := 1L ]
+    }
+  }
+
+  rm( dataset_rf )
+  dataset[ , clase01 := NULL ]
+
+  gc()
+}
 #------------------------------------------------------------------------------
 VPOS_CORTE  <- c()
 
@@ -246,7 +246,7 @@ CanaritosAsesinos  <- function( canaritos_ratio=0.2 )
   campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria","clase01", "foto_mes" ) )
 
   azar  <- runif( nrow(dataset) )
-  dataset[ , entrenamiento := foto_mes>= 202101 &  foto_mes<= 202103  & ( clase01==1 | azar < 0.10 ) ]
+  dataset[ , entrenamiento := foto_mes>= 202101 &  foto_mes<= 202105  & ( clase01==1 | azar < 0.10 ) ]
 
   dtrain  <- lgb.Dataset( data=    data.matrix(  dataset[ entrenamiento==TRUE, campos_buenos, with=FALSE]),
                           label=   dataset[ entrenamiento==TRUE, clase01],
@@ -254,9 +254,9 @@ CanaritosAsesinos  <- function( canaritos_ratio=0.2 )
                           free_raw_data= FALSE
                         )
 
-  dvalid  <- lgb.Dataset( data=    data.matrix(  dataset[ foto_mes==202105, campos_buenos, with=FALSE]),
-                          label=   dataset[ foto_mes==202105, clase01],
-                          weight=  dataset[ foto_mes==202105, ifelse(clase_ternaria=="BAJA+2", 1.0000001, 1.0)],
+  dvalid  <- lgb.Dataset( data=    data.matrix(  dataset[ foto_mes==202107, campos_buenos, with=FALSE]),
+                          label=   dataset[ foto_mes==202107, clase01],
+                          weight=  dataset[ foto_mes==202107, ifelse(clase_ternaria=="BAJA+2", 1.0000001, 1.0)],
                           free_raw_data= FALSE
                           )
 
@@ -267,7 +267,7 @@ CanaritosAsesinos  <- function( canaritos_ratio=0.2 )
                  boost_from_average= TRUE,
                  feature_pre_filter= FALSE,
                  verbosity= -100,
-                 seed= 999983,
+                 seed= 239069,
                  max_depth=  -1,         # -1 significa no limitar,  por ahora lo dejo fijo
                  min_gain_to_split= 0.0, #por ahora, lo dejo fijo
                  lambda_l1= 0.0,         #por ahora, lo dejo fijo
