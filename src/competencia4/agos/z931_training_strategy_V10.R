@@ -14,20 +14,24 @@ require("data.table")
 
 #Parametros del script
 PARAM  <- list()
-PARAM$experimento <- "TS9310_10"
+PARAM$experimento <- "TS9310_agos"
 
-PARAM$exp_input  <- "FE9250_7"
-PARAM$future       <- c( 202107 )
-
-
-PARAM$final_train  <- c(201909, 201910, 201911, 201912, 202001, 202002, 20203, 202004, 202005, 202007, 202008, 202009, 202010, 202011, 202012, 202101, 202102, 202103, 202104, 202105)
+PARAM$exp_input  <- "FE9250_agos"
+PARAM$future       <- c( 202109 )
 
 
-PARAM$train$training     <- c( 201907, 201908, 201909, 201910, 201911, 201912, 202001, 202002, 20203, 202004, 202005, 202007, 202008, 202009, 202010, 202011, 202012, 202101, 202102, 202103)
-PARAM$train$validation   <- c( 202105 )
-PARAM$train$testing      <- c( 202104 )
+PARAM$final_train  <- c(201909, 201910, 201911, 201912, 202001, 202002, 20203, 202004, 
+                        202005, 202007, 202008, 202009, 202010, 202011, 202012, 202101, 
+                        202102, 202103, 202104, 202105, 202106, 202107)
+
+
+PARAM$train$training     <- c( 201907, 201908, 201909, 201910, 201911, 201912, 202001, 202002, 
+                               20203, 202004, 202005, 202007, 202008, 202009, 202010, 202011, 
+                               202012, 202101, 202102, 202103, 202104,202105)
+PARAM$train$validation   <- c( 202107 )
+PARAM$train$testing      <- c( 202106 )
 PARAM$train$undersampling  <- 1.0   # 1.0 significa NO undersampling ,  0.1  es quedarse con el 10% de los CONTINUA
-PARAM$train$semilla  <- 238001
+PARAM$train$semilla  <- 239069
 # FIN Parametros del script
 
 #------------------------------------------------------------------------------
