@@ -42,30 +42,29 @@ options(error = function() {
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 #Aqui empieza el programa
-#base_dir <- "C:/Users/alfie/OneDrive/Documentos/Maestria_DM/Materias/DMEyF_22/"
 base_dir <- "~/buckets/b1/"
 
 #creo la carpeta donde va el experimento
-dir.create( paste0( base_dir, "exp/comp_final/", PARAM$experimento, "/"), showWarnings = FALSE )
-setwd(paste0( base_dir, "exp/comp_final/", PARAM$experimento, "/"))   #Establezco el Working Directory DEL EXPERIMENTO
+dir.create( paste0( base_dir, "exp/", PARAM$experimento, "/"), showWarnings = FALSE )
+setwd(paste0( base_dir, "exp/", PARAM$experimento, "/"))   #Establezco el Working Directory DEL EXPERIMENTO
 
 #leo la salida de la optimizaciob bayesiana
-arch_log  <- paste0( base_dir, "exp/comp_final/", PARAM$exp_input, "/BO_log.txt" )
+arch_log  <- paste0( base_dir, "exp/", PARAM$exp_input, "/BO_log.txt" )
 tb_log  <- fread( arch_log )
 setorder( tb_log, -ganancia )
 IB <- tb_log[PARAM$modelo]$iteracion_bayesiana
 cat(IB,file="Iteración_bayesiana.txt") #Guardo el rank de la iter Bayesiana usada
 
 #leo el nombre del expermento de la Training Strategy
-arch_TS  <- paste0( base_dir, "exp/comp_final/", PARAM$exp_input, "/TrainingStrategy.txt" )
+arch_TS  <- paste0( base_dir, "exp/", PARAM$exp_input, "/TrainingStrategy.txt" )
 TS  <- readLines( arch_TS, warn=FALSE )
 
 #leo el dataset donde voy a entrenar el modelo final
-arch_dataset  <- paste0( base_dir, "exp/comp_final/", TS, "/dataset_train_final.csv.gz" )
+arch_dataset  <- paste0( base_dir, "exp/", TS, "/dataset_train_final.csv.gz" )
 dataset  <- fread( arch_dataset )
 
 #leo el dataset donde voy a aplicar el modelo final
-arch_future  <- paste0( base_dir, "exp/comp_final/", TS, "/dataset_future.csv.gz" )
+arch_future  <- paste0( base_dir, "exp/", TS, "/dataset_future.csv.gz" )
 dfuture <- fread( arch_future )
 
 
