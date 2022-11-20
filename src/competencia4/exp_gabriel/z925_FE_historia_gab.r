@@ -246,7 +246,7 @@ CanaritosAsesinos  <- function( canaritos_ratio=0.2 )
   campos_buenos  <- setdiff( colnames(dataset), c("clase_ternaria","clase01", "foto_mes" ) )
 
   azar  <- runif( nrow(dataset) )
-  dataset[ , entrenamiento := foto_mes>= 202101 &  foto_mes<= 202103  & ( clase01==1 | azar < 0.10 ) ]
+  dataset[ , entrenamiento := foto_mes>= 202101 &  foto_mes<= 202105  & ( clase01==1 | azar < 0.10 ) ]
 
   dtrain  <- lgb.Dataset( data=    data.matrix(  dataset[ entrenamiento==TRUE, campos_buenos, with=FALSE]),
                           label=   dataset[ entrenamiento==TRUE, clase01],
@@ -372,7 +372,7 @@ if( PARAM$Tendencias )
 {
   TendenciaYmuchomas( dataset, 
                       cols= cols_lagueables,
-                      ventana=   6,      # 6 meses de historia
+                      ventana=   3,      # 6 meses de historia
                       tendencia= TRUE,
                       minimo=    FALSE,
                       maximo=    FALSE,
