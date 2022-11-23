@@ -22,15 +22,29 @@ PARAM$exp_input <- "HT9410_exp3"
 PARAM$modelo <- 1 # se usa el mejor de la OB, pero a futuro podria variar esto
 PARAM$semilla_primos <- 239069
 PARAM$semillerio <- 100 # ¿De cuanto será nuestro semillerio?
-PARAM$indice_inicio_semilla <- 1
-PARAM$indice_fin_semilla <- 60
+PARAM$indice_inicio_semilla <- 61
+PARAM$indice_fin_semilla <- 80
 # FIN Parametros del script
 
 # genero un vector de una cantidad de PARAM$semillerio  de semillas,  buscando numeros primos al azar
 primos <- generate_primes(min = 100000, max = 1000000) # genero TODOS los numeros primos entre 100k y 1M
 set.seed(PARAM$semilla_primos) # seteo la semilla que controla al sample de los primos
-ksemillas <- sample(primos)[1:PARAM$semillerio] # me quedo con  PARAM$semillerio primos al azar
-ksemillas_used <- ksemillas[PARAM$indice_inicio_semilla:PARAM$indice_fin_semilla]
+#ksemillas <- sample(primos)[1:PARAM$semillerio] # me quedo con  PARAM$semillerio primos al azar
+ksemillas <- c(761113,
+               278849,
+               395749,
+               775987,
+               878953,
+               684311,
+               551387,
+               672823,
+               844601,
+               510247,
+               830743,
+               709861,
+               806059,
+               922511)
+ksemillas_used <- ksemillas
 count <- length(ksemillas_used)
 #count <- (length(ksemillas_used) - 50)
 #------------------------------------------------------------------------------
@@ -42,7 +56,7 @@ options(error = function() {
 #------------------------------------------------------------------------------
 #------------------------------------------------------------------------------
 #Aqui empieza el programa
-base_dir <- "~/buckets/b1/"
+base_dir <- "~/Documents/Maestria_2022/DMEYF/"
 
 #creo la carpeta donde va el experimento
 dir.create( paste0( base_dir, "exp/", PARAM$experimento, "/"), showWarnings = FALSE )
@@ -74,7 +88,15 @@ dataset[ , clase01 := ifelse( clase_ternaria %in% c("BAJA+1","BAJA+2"), 1, 0 )  
 campos_buenos  <- setdiff( colnames(dataset), c( "clase_ternaria", "clase01") )
 
 # Guardo las semillas Y EL ORDEN en que son usadas
-write.csv(ksemillas_used, file = "ksemillas.csv", row.names = FALSE)
+write.csv(ksemillas_used, file = "ksemillas2.csv", row.names = FALSE)
+
+dtrain  <- lgb.Dataset( data=    data.matrix( dataset[ , campos_buenos, with=FALSE] ),
+                        label=   dataset[ , clase01],
+                        weight=  dataset[ , ifelse( clase_ternaria %in% c("BAJA+2"), 1.0000001, 1.0)],
+                        free_raw_data= FALSE
+)
+
+
 
 #genero un modelo para cada uno de las modelos_qty MEJORES iteraciones de la Bayesian Optimization
 for( ksemilla in ksemillas[PARAM$indice_inicio_semilla:PARAM$indice_fin_semilla] )
@@ -103,11 +125,7 @@ for( ksemilla in ksemillas[PARAM$indice_inicio_semilla:PARAM$indice_fin_semilla]
   message("Creando dataset ")
   
   #creo CADA VEZ el dataset de lightgbm
-  dtrain  <- lgb.Dataset( data=    data.matrix( dataset[ , campos_buenos, with=FALSE] ),
-                          label=   dataset[ , clase01],
-                          weight=  dataset[ , ifelse( clase_ternaria %in% c("BAJA+2"), 1.0000001, 1.0)],
-                          free_raw_data= FALSE
-  )
+  
   
   
   #elimino los parametros que no son de lightgbm
@@ -155,6 +173,5 @@ for( ksemilla in ksemillas[PARAM$indice_inicio_semilla:PARAM$indice_fin_semilla]
   rm( tb_prediccion )
   rm( modelo_final)
   rm( parametros )
-  rm( dtrain )
   gc()
 }
